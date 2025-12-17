@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NEPA</title>
+    <link rel="stylesheet" href="style.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body class="light-mode">
+    <!-- Navigation Bar -->
+    <nav class="banner">
+        <div class="container">
+            <div class="nav-title" id="nav-title">
+                <h1>NEPA</h1>
+            </div>
+            <!-- <button class="mode-toggle" onclick="toggleMode()">☼</button> -->
+        </div>
+    </nav>    
+    <!-- Header Section -->
+    <section class="header promo-banner">
+            <div class="container">
+                <div class="head-content">
+                    <div class="double-column" style="--left-width: 0.3; margin-bottom: 2rem;">
+                        <div class="left-column" style="display: flex; align-items: center;">
+                            <div class="card" style="box-shadow:none; padding:0; background:none;">
+                                <div class="flip-container">
+                                <div class="flip-inner">
+                                    <div class="flip-front">
+                                    <img src="imgs/nepa.png" alt="Paper Figure">
+                                    </div>
+                                    <div class="flip-back">
+                                    <img src="imgs/nepa-p.png" alt="Back Image" style="width: 70%;">
+                                    </div>
+                                </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="right-column" style="display: flex; align-items: center;">
+                            <div style="width: 100%;">
+                                <h3 style="font-size: 1.4rem; margin-bottom: 0.5rem;">Next-Embedding Prediction Makes Strong Vision Learners</h3>
+                                <p style="color: #666; margin-bottom: 0.5rem;">Technical Report, ArXiv 2025</p>
+                                <p style="margin-bottom: 1rem;">
+                                  <a href="https://sihanxu.github.io/" target="_blank" rel="noopener noreferrer">Sihan Xu</a>,
+                                  <a href="https://mars-tin.github.io/" target="_blank" rel="noopener noreferrer">Ziqiao Ma</a>,
+                                  <a href="https://wenhaochai.com/" target="_blank" rel="noopener noreferrer">Wenhao Chai</a>,
+                                  <a href="https://xuweiyichen.github.io/" target="_blank" rel="noopener noreferrer">Xuweiyi Chen</a>,
+                                  <a href="https://waynejin0918.github.io/home/" target="_blank" rel="noopener noreferrer">Weiyang Jin</a>
+                                  <br>
+                                  <a href="https://web.eecs.umich.edu/~chaijy/" target="_blank" rel="noopener noreferrer">Joyce Chai</a>,
+                                  <a href="https://www.sainingxie.com/" target="_blank" rel="noopener noreferrer">Saining Xie</a>,
+                                  <a href="https://web.eecs.umich.edu/~stellayu/" target="_blank" rel="noopener noreferrer">Stella X. Yu</a>
+                                </p>
+                                <div>
+                                    <!-- <a href="blog" style="text-decoration: none; color: #2563eb; margin-right: 1rem;">[Blog]</a> -->
+                                    <a href="" style="text-decoration: none; color: #2563eb; margin-right: 1rem;">[Paper]</a>
+                                    <a href="" style="text-decoration: none; color: #2563eb; margin-right: 1rem;">[arXiv]</a>
+                                    <a href="https://github.com/SihanXU/nepa" style="text-decoration: none; color: #2563eb; margin-right: 1rem;">[Code]</a>
+                                    <a href="https://huggingface.co/collections/SixAILab/nepa" style="text-decoration: none; color: #2563eb; margin-right: 1rem;">[Model]</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        <div class="scroll-bar" onclick="document.getElementById('overview').scrollIntoView();"></div>
+    </section>
+
+    <!-- Main Content Section -->
+    <section id="content" class="content">
+            <!-- Context Bar -->
+            <aside class="context-bar" id="context-bar">
+                <ul>
+                    <li><a href="#overview">Overview</a></li>
+                    <li><a href="#method1">Making NEPA Work in A Single Image</a></li>
+                    <li><a href="#method2">Scaling NEPA as Vision Backbones</a></li>
+                    <li><a href="#results">Attention and Embedding Analysis</a></li>
+                    <li><a href="#conclusion">Conclusion and Future Work</a></li>
+                </ul>
+            </aside>
+
+            <!-- Content Sections -->
+            <div class="content-section">
+                <section id="overview" class="section">
+                    <h2>Overview</h2>
+                    <p><strong><span class="kw">NEPA</span> (Next-Embedding Predictive Autoregression)</strong> is a simple algorithm for <span class="kw">generative pretraining</span>. Instead of reconstructing continuous pixels or predicting discrete tokens, we train a <span class="kw">autoregressive model</span> to predict the <span class="kw">embedding</span> of the next input given all previous ones. This <span class="kw">next-embedding objective</span> is the only <span class="kw">self-supervised signal</span>&mdash;no pixel decoder, no contrastive pairs, and no task-specific pretraining heads.</p>
+                    <div class="double-column" style="--left-width: 0.6; margin: 1rem; gap: 1rem;">
+                        <div class="left-column" style="display: flex;">
+                            <div style="width: 100%;">
+                                <ul>
+                                    <br>
+                                    <li><strong>Minimal algorithmic design.</strong> <span class="kw">NEPA</span> relies solely on a <span class="kw">next-embedding prediction</span> loss to learn broad, generalizable models for diverse downstream vision problems—no decoders, no masking schedules, and no extra tricks.</li>
+                                    <br>
+                                    <li><strong>Native embeddings.</strong> No <span class="kw">offline encoders</span>. Autoregression operates on the embeddings from the encoder directly.</li>
+                                    <br>
+                                    <li><strong>Strong performance as ViT backbones.</strong> We train modern <span class="kw">Vision Transformers</span> with <span class="kw">NEPA</span> and achieve competitive performance after supervised fine-tuning.</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="right-column" style="display: flex; align-items: center;">
+                            <div class="figure">
+                                <img src="imgs/nepa-p.png" style="width: 65%; height: auto; margin: auto;">
+                                <div class="caption" >The Overview of <span class="kw">Next-Embedding Predictive Autoregression (NEPA)</span>.</div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+                <section id="method1" class="section">
+                    <h2>Making NEPA Work in A Single Image</h2>
+                    <p>
+                        The core idea in our pretraining recipe is simple: given a sequence of <span class="kw">image patch embeddings</span>, predict the <span class="kw">next one</span>.
+                        However, naïve implementations of this <span class="kw">next-embedding loss</span> tend to diverge, collapse, or learn near-identity mappings.
+                        This section focuses on what it takes, at the algorithm level, to turn this predictive objective into a stable and useful training signal.
+                    </p>
+
+                    <div class="algorithm">
+                        <div class="caption">
+                            Next-embedding prediction.
+                        </div>
+<pre><code><span class="alg-comment"># f: embedding layer</span>
+<span class="alg-comment"># h: autoregressive model</span>
+
+<span class="alg-keyword">for</span> pixel_values <span class="alg-keyword">in</span> loader:   <span class="alg-comment"># x, [B, H, W, C]</span>
+    input_embed = <span class="alg-func">f</span>(pixel_values)   <span class="alg-comment"># z, [B, T, D]</span>
+    pred_embed  = <span class="alg-func">h</span>(input_embed)    <span class="alg-comment"># z_hat, [B, T, D]</span>
+
+    loss = <span class="alg-func">Dist</span>(input_embed, pred_embed)
+
+    loss.backward()                 <span class="alg-comment"># back-propagate</span>
+    update(f.param, h.param)        <span class="alg-comment"># update parameters</span>
+
+<span class="alg-keyword">def</span> <span class="alg-func">Dist</span>(z, z_hat):
+    target = z.detach()             <span class="alg-comment"># stop gradient</span>
+
+    pred   = z_hat[:, 0:T-1, :]     <span class="alg-comment"># shift, [B, T-1, D]</span>
+    target = target[:, 1:T,   :]    <span class="alg-comment"># shift, [B, T-1, D]</span>
+
+    <span class="alg-comment"># Use any suitable distance metric.</span>
+    pred   = normalize(pred,   axis=-1)  <span class="alg-comment"># l2-norm</span>
+    target = normalize(target, axis=-1)  <span class="alg-comment"># l2-norm</span>
+    <span class="alg-keyword">return</span> -(pred * target).sum(dim=-1).mean()</code></pre>
+                    </div>
+
+                    <p>
+                        <strong>What to attend? <span class="kw">Autoregressive</span>, not autoencoding.</strong>
+                        We treat each image as an ordered sequence of patches and enforce a <span class="kw">causal ordering</span> during pretraining: each patch can only attend to previous patches when predicting the next embedding.
+                        This turns the task into genuine <span class="kw">prediction</span> rather than reconstruction.
+                        When we allow bidirectional attention so that future patches are also visible, the optimization problem becomes easier, but the downstream performance drops, suggesting that "peeking at the answer" undermines the value of the predictive signal.
+                    </p>
+
+                    <div class="table">
+                        <div class="caption">
+                        Ablation of autoregressive shifting, causal masking, and stop-gradient in
+                        the predictive loss.
+                        </div>
+                        <table>
+                        <thead>
+                            <tr>
+                            <th>Shifting</th>
+                            <th>Causal masking</th>
+                            <th>Stop-gradient</th>
+                            <th>50k-step acc (%)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                            <td>&times;</td>
+                            <td>&check;</td>
+                            <td>&check;</td>
+                            <td style="color: red;">fail</td>
+                            </tr>
+                            <tr>
+                            <td>&check;</td>
+                            <td>&times;</td>
+                            <td>&check;</td>
+                            <td>73.6</td>
+                            </tr>
+                            <tr>
+                            <td>&check;</td>
+                            <td>&check;</td>
+                            <td>&times;</td>
+                            <td style="color: red;">fail</td>
+                            </tr>
+                            <tr>
+                            <td>&check;</td>
+                            <td>&check;</td>
+                            <td>&check;</td>
+                            <td><strong>76.8</strong></td>
+                            </tr>
+                        </tbody>
+                        </table>
+                    </div>
+
+                    <p>
+                        <strong>What to predict? From copying the current to <span class="kw">predicting the next</span>.</strong>
+                        We frame pretraining as predicting the <span class="kw">embedding of the next patch</span> in the sequence, rather than reconstructing the current input.
+                        Introducing an <span class="kw">autoregressive shift</span> prevents the model from "cheating" by copying its inputs, i.e., using patch <em>t</em> as input and patch <em>t+1</em> as the target.
+                        Ablation studies show that without this shift, training quickly stalls and validation accuracy barely rises, whereas the shifted variant steadily climbs to a strong model.
+                    </p>
+
+                    <div class="double-column" style="--left-width: 0.5; margin: 1rem; gap: 1rem;">
+                        <div class="left-column" style="display: flex; align-items: center;">
+                            <div style="width: 100%;">
+                                <div class="figure">
+                                    <img src="imgs/acc_shift.png" alt="Training curves with and without autoregressive shift" style="max-width: 300px;">
+                                    <div class="caption">
+                                    Training dynamics of the next-embedding objective with (blue) and without (gray) autoregressive shift.
+                                    Without the shift, accuracy stagnates; with the shift, the model steadily improves.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="right-column" style="display: flex; align-items: center;">
+                            <div style="width: 100%;">
+                                <div class="figure">
+                                    <img src="imgs/loss_stopgrad.png" alt="Training loss with and without stop-gradient on targets" style="max-width: 300px;">
+                                    <div class="caption">
+                                    Training loss for the predictive objective with (blue) and without (gray) stop-gradient on the targets.
+                                    Without stop-gradient, the loss collapses to a degenerate solution; with stop-gradient, the loss decreases steadily while preserving rich representations.
+                                    </div>
+                                </div>
+                            </div>
+                        </div> 
+                    </div>
+
+                    <p>
+                    <strong>Preventing model collapse with <span class="kw">stop-gradient</span>.</strong>
+                    The predictive loss compares the <span class="kw">next embedding</span> produced by the autoregressive head with the corresponding embedding from the encoder itself.
+                    If gradients are allowed on both sides, optimization quickly finds a trivial solution where almost all patches share the same vector and the loss saturates.
+                    By stopping gradients on the targets, we remove this collapsing direction: the encoder still learns through its contextual role, while the loss encourages diverse, expressive, non-trivial representations.
+                    </p>
+
+                    <p>
+                        <strong>Random masking is <span class="kw">not required</span>.</strong>
+                        Reconstruction-based objectives such as <span class="kw">masked image modeling</span> often rely on high mask ratios to keep the task from becoming too easy.
+                        In the next-embedding setup, the difficulty is intrinsic: the next patch is always unknown, even when all previous patches are observed.
+                        Ablations over input masking ratios show that adding random masks consistently degrades transfer performance.
+                    </p>
+
+                    <div class="table">
+                    <div class="caption">
+                        Effect of random input masking on the predictive pretraining objective.
+                    </div>
+                    <table>
+                        <thead>
+                        <tr>
+                            <th>Masking ratio</th>
+                            <th>Top-1 accuracy (finetuned)</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr>
+                            <td>0%</td>
+                            <td>78.2</td>
+                        </tr>
+                        <tr>
+                            <td>40%</td>
+                            <td>76.4</td>
+                        </tr>
+                        <tr>
+                            <td>60%</td>
+                            <td>75.7</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                    </div>
+
+                </section>
+
+                <section id="method2" class="section">
+
+                    <h2>Scaling NEPA as Vision Backbones</h2>
+                    <p>
+                        Building on the predictive objective from the previous section, we now show how to host it inside modern <span class="kw">Vision Transformers</span> and scale from base to larger backbones. The goal is to keep the training recipe simple—no decoders, no extra heads—while using a small set of architectural components to make deep, causal models stable and effective.
+                    </p>
+
+                    <div class="figure" style="max-width: 400px; margin: auto;">
+                        <img src="imgs/model_design.png" alt="Causal Vision Transformer with predictive pretraining">
+                        <div class="caption">
+                        A <span class="kw">causal Vision Transformer</span> hosting the predictive objective. Images are tokenized via a Conv2d patch embedder before entering a pre-norm Transformer with LayerNorm. Modern stabilization components (<span class="kw">RoPE</span>, <span class="kw">LayerScale</span>, <span class="kw">SwiGLU</span>, and <span class="kw">QK-Norm</span>) are applied at all layers.
+                        </div>
+                    </div>
+
+                    <p>
+                        <strong>A causal vision transformer as a simple host.</strong>
+                        We instantiate the predictive loss on top of a standard <span class="kw">ViT</span>: patchify the image, project patches to embeddings, and stack pre-norm transformer blocks. The only structural change is to make attention strictly <span class="kw">causal</span> over the patch sequence so that each position can only attend to previous patches when predicting the next embedding. Within each block, we adopt a modern configuration with <span class="kw">rotary positional embeddings (RoPE)</span> for attention and <span class="kw">SwiGLU</span> feed-forward layers, so that the encoder closely resembles current high-performance ViT/LLM-style architectures.
+                    </p>
+
+                    <div class="table">
+                    <div class="caption">
+                        Ablation of architectural components on 100k-step accuracy.
+                    </div>
+
+                    <table>
+                        <thead>
+                        <tr>
+                            <th>LayerScale</th>
+                            <th>RoPE</th>
+                            <th>QK-Norm</th>
+                            <th>GatedMLP</th>
+                            <th>100k acc (%)</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr>
+                            <td>✗</td>
+                            <td>✗</td>
+                            <td>✗</td>
+                            <td>✗</td>
+                            <td>78.2</td>
+                        </tr>
+                        <tr>
+                            <td>✓</td>
+                            <td>✗</td>
+                            <td>✗</td>
+                            <td>✗</td>
+                            <td>77.4</td>
+                        </tr>
+                        <tr>
+                            <td>✓</td>
+                            <td>✓</td>
+                            <td>✗</td>
+                            <td>✗</td>
+                            <td>80.2</td>
+                        </tr>
+                        <tr>
+                            <td>✓</td>
+                            <td>✓</td>
+                            <td>✓</td>
+                            <td>✗</td>
+                            <td style="color: red;">fail</td>
+                        </tr>
+                        <tr>
+                            <td>✓</td>
+                            <td>✓</td>
+                            <td>✗</td>
+                            <td>✓</td>
+                            <td>81.1</td>
+                        </tr>
+                        <tr style="background-color: #e6f4ff;">
+                            <td>✓</td>
+                            <td>✓</td>
+                            <td>✓</td>
+                            <td>✓</td>
+                            <td><strong>81.3</strong></td>
+                        </tr>
+                        </tbody>
+                    </table>
+                    </div>
+
+                    <p>
+                        <strong>Making deeper transformers stable.</strong>
+                        When we scale this causal model to deeper and wider configurations, training can become fragile: losses may oscillate or gradients spike. We find that two lightweight normalization components are sufficient to stabilize the dynamics. <span class="kw">LayerScale</span> adds a small learnable scaling factor on each residual branch, so early layers start with a conservative contribution that gradually grows during training. <span class="kw">QK-Norm</span> normalizes queries and keys before computing attention logits, keeping their scale under control and preventing gradient explosions in attention layers.
+                    </p>
+
+                    <div class="double-column" style="--left-width: 0.5; margin: 1rem 0; gap: 1rem;">
+                        <div class="left-column" style="display: flex; align-items: center;">
+                            <div style="width: 100%;">
+                                <div class="figure">
+                                <img src="imgs/loss_layerscale.png" alt="Effect of LayerScale on training loss" style="max-width: 300px;">
+                                <div class="caption">
+                                    Training loss with and without LayerScale; LayerScale stabilizes optimization and accelerates convergence.
+                                </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="right-column" style="display: flex; align-items: center;">
+                            <div style="width: 100%;">
+                                <div class="figure">
+                                    <img src="imgs/grad_qknorm.png" alt="Effect of QK-Norm on gradient norms" style="max-width: 300px;">
+                                    <div class="caption">
+                                        Gradient norm with and without QK-Norm; QK-Norm suppresses gradient explosion and improves smoothness.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <p>
+                        <strong>Staying aligned with modern transformer design.</strong>
+                        <span class="kw">Rotary positional embeddings</span> provide a relative, translation-friendly notion of position that works naturally with causal attention and improves fine-tuning accuracy compared to absolute positional encodings. <span class="kw">SwiGLU</span> feed-forward layers bring the encoder in line with recent transformer practice and offer a modest boost over GeLU MLPs, without changing the overall structure of the predictive recipe. These choices ensure that the encoder can plug into existing vision and multimodal stacks with minimal friction.
+                    </p>
+
+                    <p>
+                        <strong>From pretraining to <span class="kw">ImageNet-1K</span> classification.</strong>
+                        The same pretrained encoder is reused for ImageNet-1K without changing the pretraining setup:
+                        we simply add a <span class="kw">linear classifier</span> on top of the encoder outputs and fine-tune the model.
+                        This predictive model achieves competitive <span class="kw">top-1 accuracy</span> while keeping both pretraining and fine-tuning pipelines simple.
+                    </p>
+
+                    <div class="table">
+                        <div class="caption">
+                            Comparison of <span class="kw">self-supervised pretraining</span> frameworks on <span class="kw">ImageNet-1K</span> classification.
+                            Base models are shown in the upper block and large models in the lower block.
+                            Effective pretraining epochs are counted in terms of images or views seen during training.
+                            “*” marks models that use causal attention during fine-tuning; “†” denotes results based on our implementation.
+                        </div>
+                        
+                        <div style="overflow-x: auto;">
+                            <table>
+                                <thead>
+                                <tr>
+                                    <th>Model</th>
+                                    <th>Pretrain task</th>
+                                    <th>Pretrain framework</th>
+                                    <th>Decoder</th>
+                                    <th># FWD / step</th>
+                                    <th>Epochs</th>
+                                    <th>Acc (%)</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                <tr>
+                                    <th colspan="7">ViT-B</th>
+                                </tr>
+                                <tr>
+                                    <td>MoCo v3-B</td>
+                                    <td>contrastive learning</td>
+                                    <td>siamese</td>
+                                    <td>mlp proj. head</td>
+                                    <td>2</td>
+                                    <td>600</td>
+                                    <td>83.2</td>
+                                </tr>
+                                <tr>
+                                    <td>BEiT-B</td>
+                                    <td>masked token pred</td>
+                                    <td>masked modeling</td>
+                                    <td>linear pred. head</td>
+                                    <td>1</td>
+                                    <td>800</td>
+                                    <td>83.4</td>
+                                </tr>
+                                <tr>
+                                    <td>DINO-B</td>
+                                    <td>self-distillation</td>
+                                    <td>siamese</td>
+                                    <td>mlp proj. head</td>
+                                    <td>N</td>
+                                    <td>1600</td>
+                                    <td><u>83.6</u></td>
+                                </tr>
+                                <tr>
+                                    <td>MAE-B</td>
+                                    <td>masked pixel pred</td>
+                                    <td>masked autoencoder</td>
+                                    <td>transformer decoder</td>
+                                    <td>1</td>
+                                    <td>1600</td>
+                                    <td><u>83.6</u></td>
+                                </tr>
+                                <tr style="background-color: #e6f4ff;">
+                                    <td><strong>NEPA-B*</strong></td>
+                                    <td>autoreg. embed pred</td>
+                                    <td>autoregression</td>
+                                    <td>none</td>
+                                    <td>1</td>
+                                    <td>1600</td>
+                                    <td>82.5</td>
+                                </tr>
+                                <tr style="background-color: #e6f4ff;">
+                                    <td><strong>NEPA-B</strong></td>
+                                    <td>autoreg. embed pred</td>
+                                    <td>autoregression</td>
+                                    <td>none</td>
+                                    <td>1</td>
+                                    <td>1600</td>
+                                    <td><strong>83.8</strong></td>
+                                </tr>
+
+                                <tr>
+                                    <th colspan="7">ViT-L</th>
+                                </tr>
+                                <tr>
+                                    <td>MoCo v3-L</td>
+                                    <td>contrastive learning</td>
+                                    <td>siamese</td>
+                                    <td>mlp proj. head</td>
+                                    <td>2</td>
+                                    <td>600</td>
+                                    <td>84.1</td>
+                                </tr>
+                                <tr>
+                                    <td>iBot-L</td>
+                                    <td>self-dist &amp; masked token pred</td>
+                                    <td>siamese &amp; masked modeling</td>
+                                    <td>mlp proj. head</td>
+                                    <td>4</td>
+                                    <td>1000</td>
+                                    <td>84.8</td>
+                                </tr>
+                                <tr>
+                                    <td>BEiT-L</td>
+                                    <td>masked token pred</td>
+                                    <td>masked modeling</td>
+                                    <td>linear pred. head</td>
+                                    <td>1</td>
+                                    <td>800</td>
+                                    <td>85.2</td>
+                                </tr>
+                                <tr>
+                                    <td>MAE-L</td>
+                                    <td>masked pixel pred</td>
+                                    <td>masked autoencoder</td>
+                                    <td>transformer decoder</td>
+                                    <td>1</td>
+                                    <td>1600</td>
+                                    <td><strong>85.6&dagger;</strong></td>
+                                </tr>
+                                <tr>
+                                    <td>JEPA-L</td>
+                                    <td>masked embed pred</td>
+                                    <td>siamese &amp; masked modeling</td>
+                                    <td>transformer predictor</td>
+                                    <td>2</td>
+                                    <td>300</td>
+                                    <td>85.2&dagger;</td>
+                                </tr>
+                                <tr style="background-color: #e6f4ff;">
+                                    <td><strong>NEPA-L*</strong></td>
+                                    <td>autoreg. embed pred</td>
+                                    <td>autoregression</td>
+                                    <td>none</td>
+                                    <td>1</td>
+                                    <td>800</td>
+                                    <td>84.1</td>
+                                </tr>
+                                <tr style="background-color: #e6f4ff;">
+                                    <td><strong>NEPA-L</strong></td>
+                                    <td>autoreg. embed pred</td>
+                                    <td>autoregression</td>
+                                    <td>none</td>
+                                    <td>1</td>
+                                    <td>800</td>
+                                    <td><u>85.3</u></td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <p>
+                        <strong>Scaling behavior with model size.</strong>
+                        Using this modern model, we scale the predictive pretraining from base to larger <span class="kw">Vision Transformers</span> under a fixed recipe on <span class="kw">ImageNet-1K</span>. Training remains stable across model sizes, and fine-tuning accuracy improves monotonically as the backbone grows. The resulting models are competitive with more complex masked-image or distillation-based pretraining methods.
+                    </p>
+
+                    <div class="figure" style="max-width: 500px; margin: auto;">
+                        <img src="imgs/eam_b_ft.png" alt="Scaling behavior of predictive pretraining with nepa-b">
+                        <img src="imgs/eam_l_ft.png" alt="Scaling behavior of predictive pretraining with nepa-l">
+                        <div class="caption">
+                        <span class="kw">ImageNet-1K</span> validation Top-1 accuracy versus training epochs. For each epoch's checkpoint, we perform a lightweight hyperparameter search and report the best accuracy. Fine-tuning uses causal attention. The top plot corresponds to the base model, and the bottom plot to the large model.
+                    </div>
+
+                </div>
+
+                </section>
+
+                <section id="results" class="section">
+                    <h2>Attention and Embedding Analysis</h2>
+                    <p>
+                    We study how the model organizes visual information by looking at its <span class="kw">attention maps</span> and learned <span class="kw">embeddings</span>.
+                    This reveals whether next-embedding prediction induces meaningful global structure.
+                    </p>
+
+                    <p>
+                    <strong><span class="kw">Attention Map Analysis</span>. </strong>
+                    We mark a query patch on images and visualize its attention maps.
+                    The maps are long-ranged and object-centric, focusing on semantically related patches and suppressing distractors, rather than spreading uniformly or staying purely local.
+                    </p>
+
+                    <p>
+                    <strong><span class="kw">Embedding Analysis</span>. </strong>
+                    We compare the predicted embedding of the next patch with all other patches in the same image and visualize the similarity.
+                    The predicted embedding is most similar to patches on the same object or region and much less similar to unrelated background, indicating embeddings that capture object-level structure rather than just local texture.
+                    </p>
+                    
+                    <div class="figure" style="max-width: 800px; margin: auto;">
+                        <img src="imgs/attn_anal_im1k.png" alt="attn nepa-b">
+                        <strong>ImageNet-1K validation samples (unseen during pretraining).</strong>
+                        <img src="imgs/attn_anal_unseen.png" alt="attn nepa-l">
+                        <strong>MSCOCO validation samples (out of distribution during pretraining).</strong>
+                        <div class="caption">
+                        <span class="kw">Attention</span> and <span class="kw">embedding analyses</span>.     
+                        Each example consists of three views:  
+                        (i) the query patch highlighted in the original image,  
+                        (ii) the attention map showing which patches the model attends to when predicting the next embedding, and  
+                        (iii) the embedding-similarity map showing the cosine similarity between the predicted embedding and all other patch embeddings in the same image.  
+                        Warmer colors indicate higher attention or greater similarity; cooler colors indicate lower values.
+                        </div>
+                    </div>
+
+                </section>
+                <section id="conclusion" class="section">
+                <h2>Conclusion and Future Work</h2>
+
+                <p>
+                    This work revisits causal next-token prediction in the context of vision, not in pixel or token space,
+                    but directly in the <span class="kw">embedding space</span> of patch features.
+                    We show that simple <span class="kw">next-embedding prediction</span>, combined with a modern causal Vision Transformer,
+                    is sufficient to learn scalable and transferable visual representations.
+                    By treating patch embeddings as prediction targets, we avoid brittle, handcrafted pretext tasks and instead
+                    rely on the structure induced by the sequence itself.
+                    With only self-supervised pretraining on <span class="kw">ImageNet-1K</span> and a single forward pass without any decoder,
+                    our predictive encoder achieves competitive downstream performance while keeping the training pipeline simple.
+                </p>
+
+                <p>
+                    <strong>Modality-agnostic potential.</strong>
+                    Many recent language models share input and output embeddings, effectively predicting the <span class="kw">next embedding</span> in
+                    a latent space—an idea closely aligned with our framework.
+                    Seen from this angle, our approach suggests a <span class="kw">unifying view</span> where different modalities can be trained under
+                    the same next-embedding objective, using embeddings as a common representational currency.
+                </p>
+
+                <p>
+                    <strong>Generative potential.</strong>
+                    Our formulation also naturally points toward <span class="kw">generative modeling</span>.
+                    Coupling the autoregressive embedding predictor with an image decoder or diffusion-based generator could
+                    enable image synthesis and editing within the same framework that is used for representation learning.
+                    Exploring such models that jointly support strong representations and generation is an exciting direction
+                    for future work.
+                </p>
+
+                <!-- <p>
+                    See <a href="blog">[Blog]</a> for further and higher-level discussions.
+                </p> -->
+
+                </section>
+
+            </div>
+    </section>
+    <!-- Footer Section -->
+    <footer class="footer">
+        <div class="container">
+            <h2>BibTeX</h2>
+            <p>If you find this work useful, please cite:</p>
+            <pre class="bibtex">
+@article{six2025nepa,
+  title={Next-Embedding Prediction Makes Strong Vision Learners},
+  author={Sihan Xu and Ziqiao Ma and Wenhao Chai and Xuweiyi Chen and Weiyang Jin and Joyce Chai and Saining Xie and Stella X. Yu},
+  journal={arXiv preprint arXiv:},
+  year={2025}
+}
+            </pre>
+            <p>
+                This website is licensed under a
+                <a rel="license" href="http://creativecommons.org/licenses/by-sa/4.0/">
+                    Creative Commons Attribution-ShareAlike 4.0 International License
+                </a>.
+            </p>
+            <p>Design by <a href="https://sihanxu.me/" target="_blank">Si.X</a></p>
+        </div>
+    </footer>
+
+</body>
+</html>
