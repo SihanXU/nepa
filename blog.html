@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NEPA</title>
+    <link rel="stylesheet" href="style.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script>
+        window.MathJax = { tex: { inlineMath: [['\\(', '\\)'], ['$', '$']] } };
+    </script>
+    <script async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+<body class="light-mode">
+    <!-- Navigation Bar -->
+    <nav class="banner">
+        <div class="container">
+            <div class="nav-title" id="nav-title">
+                <h1>NEPA</h1>
+            </div>
+            <!-- <button class="mode-toggle" onclick="toggleMode()">☼</button> -->
+        </div>
+    </nav>    
+    <!-- Header Section -->
+    <section class="header promo-banner">
+            <div class="container">
+                <div class="head-content">
+                    <div class="double-column" style="--left-width: 0.3; margin-bottom: 2rem;">
+                        <div class="left-column" style="display: flex; align-items: center;">
+                            <div class="card" style="box-shadow:none; padding:0; background:none;">
+                                <div class="flip-container">
+                                <div class="flip-inner">
+                                    <div class="flip-front">
+                                    <img src="imgs/nepa.png" alt="Paper Figure">
+                                    </div>
+                                    <div class="flip-back">
+                                    <img src="imgs/nepa-p.png" alt="Back Image" style="width: 70%;">
+                                    </div>
+                                </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="right-column" style="display: flex; align-items: center;">
+                            <div style="width: 100%;">
+                                <h3 style="font-size: 1.4rem; margin-bottom: 0.5rem;">Omnimodality from First Principles</h3>
+                                <p style="color: #666; margin-bottom: 0.5rem;">Why We Bet in Autoregression in Latent Space</p>
+                                <p style="margin-bottom: 1rem;">
+                                  Written by
+                                  <a href="https://sihanxu.github.io/" target="_blank" rel="noopener noreferrer">Sihan Xu</a>,
+                                  <a href="https://mars-tin.github.io/" target="_blank" rel="noopener noreferrer">Ziqiao Ma</a> and
+                                  <a href="https://wenhaochai.com/index.html" target="_blank" rel="noopener noreferrer">Wenhao Chai</a>.
+                                </p>
+                                <div>
+                                    <a href="index" style="text-decoration: none; color: #2563eb; margin-right: 1rem;">[Page]</a>
+                                    <a href="https://arxiv.org/pdf/2512.16922" style="text-decoration: none; color: #2563eb; margin-right: 1rem;">[Paper]</a>
+                                    <a href="https://arxiv.org/abs/2512.16922" style="text-decoration: none; color: #2563eb; margin-right: 1rem;">[arXiv]</a>
+                                    <a href="https://github.com/SihanXU/nepa" style="text-decoration: none; color: #2563eb; margin-right: 1rem;">[Code]</a>
+                                    <a href="https://huggingface.co/collections/SixAILab/nepa" style="text-decoration: none; color: #2563eb; margin-right: 1rem;">[Model]</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        <div class="scroll-bar" onclick="document.getElementById('overview').scrollIntoView();"></div>
+    </section>
+
+    <!-- Main Content Section -->
+    <section id="content" class="content">
+
+        <aside class="context-bar" id="context-bar">
+        <ul>
+            <li><a href="#omnimodality">Why Latent Space</a></li>
+            <li><a href="#autoregression">Why Autoregression</a></li>
+            <li><a href="#observations">Observations</a></li>
+            <li><a href="#nepa">Next-Embedding Prediction</a></li>
+            <li><a href="#conclusion">Final Remarks</a></li>
+        </ul>
+        </aside>
+
+        <div class="content-section">
+
+        <!-- Overview -->
+        <section id="overview" class="section">
+
+            <p>
+                In this blog, we try to look at <span class="kw">unified multimodal generative (omnimodal) modeling</span> from first principles.
+                We believe that omnimodality is an <span class="kw">interface problem</span>.
+                What we want is a <span class="kw">single learning/serving interface</span> that scales across modalities and tasks defined on these modalities.
+            </p>
+
+            <p>
+                <strong>The Bet:</strong> <span class="kw">Latent space</span> is the unified interface and <span class="kw">autoregression is sufficient</span>.
+            </p>
+
+            <p>
+                <strong>Disclaimers:</strong> This blog is <span class="kw">deliberately opinionated</span>, and we tune down the notational rigor of the mathematics: 
+                it reflects our own intuitive throught process and way of organizing ideas that leads to <a href="index">NEPA</a>, 
+                not a theory of deep learning or a definitive statement.
+                Many claims are closer to educated positions and <span class="kw">self-consistent narratives</span> than to rigorous theorems or empirical facts; 
+                readers should treat them as our <span class="kw">subjective framing</span>, useful only as they help
+                to convey what we believe what our work implies.
+                The blog is edited with help from an LLM.
+            </p>
+
+        </section>
+
+        <section id="omnimodality" class="section">
+
+            <h2>Why Latent Space</h2>
+
+            <p>
+                By <em><span class="kw">omnimodality</span></em>, we mean that multiple <em>observation channels</em> (images, text, audio, video, tactile, etc) 
+                can all serve as the <em>context</em> and that the system can respond in any modality as well. 
+                A <em><span class="kw">shared latent space</span></em> can be a unified interface where both inputs and outputs are <span class="kw">modality-agnostic</span>: 
+                different modalities enter and exit through the same shared representation, 
+                and the core training signal operates on embeddings rather than modality-specific decoders.
+            </p>
+
+            <p>
+                One tempting story is the <em><span class="kw">Platonic Representation Hypothesis (PRH)</span></em>:<sup><a href="#ref-1">1</a></sup>
+                “Neural networks, trained with different objectives on different data and modalities, are converging to a 
+                <span class="kw">shared statistical model of reality</span> in their <span class="kw">representation spaces</span>.”
+                In this view, different sensory inputs (for example, images and text) provide complementary observations of the same underlying reality, and representation learning is expected to converge to a 
+                <span class="kw">shared representation of reality</span> as we scale model size, data, and task diversity.
+            </p>
+
+            <p>
+                We think PRH is a <span class="kw">useful intuition</span>, but a <span class="kw">misleading justification</span> for latent space as a unified interface.
+                Even if there is one reality, different sensors do not, in general, admit a single <span class="kw">shared statistical representation</span>: 
+                they observe different functions of the world, with different invariances and different blind spots.
+                Considering the following thought experiment:
+            </p>
+
+            <div class="figure" style="max-width: 520px; margin: 1rem auto 0%;">
+                <img src="imgs/latent.png" alt="Two boxes: a real candle vs. a video of a candle, observed through a small hole">
+                <div class="caption">
+                A thought experiment: through a tiny hole in an opaque iron box, you see what looks like a candle.
+                In another box, you see a video of a candle on a screen through the same kind of hole.
+                From this view alone, you may not be able to tell which is real unless you touch the box and feel the heat.
+                </div>
+            </div>
+
+            <p>
+                Vision and touch are unlikely to converge to the same <span class="kw">latent geometry</span>: 
+                touch directly measures temperature, while RGB video at best provides weak, indirect cues.
+                To see why, compare two queries:
+                (i) “what is it?” and (ii) “is it hot?”. 
+                The first can often be answered from appearance.
+                The second depends on physical state you might not see at all. 
+                The point is not the candle itself, but the structure of the problem: 
+                the <span class="kw">same sensory evidence</span> can be consistent with <span class="kw">different realities</span>.
+                So there is no single canonical “shared representation”:
+                under partial observability, multiple internal states are equally consistent with the evidence and equally sufficient for the training objectives.
+            </p>
+
+            <p>
+                A weaker claim we rely on is more pragmatic: <span class="kw">each modality</span> converges toward its own <span class="kw">best predictive representation</span> for the aspects of reality it can reliably sense and predict, and there is no reason these optima must be the same across sensors. 
+                A shared latent space is not a single representation of reality that every modality must occupy, 
+                but a common space in which each modality lives on (and moves within) a <span class="kw">subspace</span>, 
+                typically with substantial overlap on shared factors, and modality-specific directions for what only that sensor can capture.
+            </p>
+
+            <p>
+                Under this lens, <span class="kw">latent space</span> is a <span class="kw">practical interface</span> for omnimodality. 
+                We do not need latents to be “the” reality; 
+                we need a <span class="kw">shared currency</span> that (a) many modalities can map into, 
+                (b) many queries and output heads can read from, and 
+                (c) can carry uncertainty when the world is underdetermined (e.g., real candle vs. screen candle). 
+                In short, the target is a predictive protocol: easy to condition, update, and decode when needed.
+                This is why we bet on latents: they turn many-to-many translation into a hub-and-spoke system. 
+                We do not claim this is the only route, but it is a clean, scalable interface for omnimodality, consistent with the same “packaging” argument that favors autoregression.
+            </p>
+
+        </section>
+
+        <section id="autoregression" class="section">
+
+            <h2>Why Autoregression</h2>
+
+            <p>
+                Our goal is not to pick a “best generation algorithm,” but to choose a <span class="kw">unified modeling interface</span>:
+                a single way to train and serve models across tasks and modalities without inventing a new objective each time.
+                In the <span class="kw">omnimodal</span> setting, the core difficulty is not that images, audio, and language are “different,”
+                but that many formulations force us to change what the model predicts whenever the modality changes
+                (discrete symbols here, continuous signals there, thus modality-specific heads and losses).
+                A scalable interface should avoid this: adding a new modality should not require a new <span class="kw">prediction space</span>
+                or a new learning rule.
+            </p>
+
+            <p>
+                <span class="kw">Autoregression</span> is a minimal answer to this interface problem.
+                Given any target \(y\), we choose an ordering and write it as a sequence of variables \(z_{1:T}\)
+                (tokens, patches, actions, fields, etc.).
+                Learning then reduces to a single repeated subproblem: predict the next element from its
+                <span class="kw">context</span>.
+                Formally, conditioned on any input \(x\) (which can itself be empty), we factorize the conditional distribution
+                using the chain rule:
+            </p>
+
+            <p>
+                \[
+                p_{\theta}(z_{1:T} \mid x)
+                = \prod_{t=1}^{T} p_{\theta}\bigl(z_t \mid x, z_{&lt;t}\bigr).
+                \]
+            </p>
+
+            <p>
+                From this perspective, “time” or “sequence” is just an <span class="kw">indexing</span> device:
+                we choose a <span class="kw">partial ordering</span> over variables that defines what counts as context \(z_{&lt;t}\) and what counts as the next state \(z_t\).<sup><a href="#ref-2">2</a></sup>
+                In some domains the index has a physical meaning, such as temporal steps in language, audio, or control;
+                in others it is an artificial but convenient schedule over spatial locations, resolution levels, latent refinement steps,
+                or even iterations of a denoising or planning procedure.<sup><a href="#ref-3">3</a></sup>
+                Once such an ordering is fixed, the same <span class="kw">autoregressive rule</span> applies and we do not need to change the learning objective
+                when we move from one domain or representation to another.
+            </p>
+
+            <p>
+                Autoregression, thus, can be seen as a <span class="kw">universal learning interface</span>:
+                learn to predict the next variable from its context, whatever those variables represent.
+                In this view, many kinds of problems such as language modeling, visual perception, control, reasoning,
+                and even self refinement in iterative solvers can all be expressed as different ways of using the same predictive mechanism.
+            </p>
+
+        </section>
+
+        <section id="observations" class="section">
+
+            <h2>Observations</h2>
+
+            <p>
+                Once we pick an ordering, we just repeatedly predict “the next thing” from context. 
+                The remaining question is what that “thing” lives in, i.e., what <span class="kw">target space</span> we autoregress over. 
+                In practice, today's approaches mostly fall into two families: autoregression over <span class="kw">categorical tokens</span> and <span class="kw">continuous tokens</span>, each clean in isolation but awkward to unify.
+            </p>
+            
+            <div class="table">
+            <div class="caption">
+                Different <span class="kw">autoregressive (AR) formulations</span>: 
+                what is predicted, what modalities they naturally support, and typical objectives.
+            </div>
+            <table style="width: 80%;">
+                <thead>
+                <tr>
+                    <th>AR Algorithm</th>
+                    <th>Prediction Target Space</th>
+                    <th>Suitable Modality</th>
+                    <th>Training Objectives</th>
+                    <th>Representative Examples</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                    <td style="white-space: normal;">Categorical Token AR (Symbols)</td>
+                    <td style="white-space: normal;">Predefined Discrete Symbols (Token)</td>
+                    <td style="white-space: normal;">Discrete (text, pixel, ...)</td>
+                    <td style="white-space: normal;">Probability-Based Objectives (cross-entropy, negative log-likelihood, ...)</td>
+                    <td style="white-space: normal;">GPT<sup><a href="#ref-4">4</a></sup>, iGPT<sup><a href="#ref-5">5</a></sup>, VAR<sup><a href="#ref-6">6</a></sup>, LlamaGen<sup><a href="#ref-7">7</a></sup></td>
+                </tr>
+                <tr>
+                    <td style="white-space: normal;">Continuous Token AR (Signals)</td>
+                    <td style="white-space: normal;">Predefined Continuous Symbols (Value)</td>
+                    <td style="white-space: normal;">Continuous (patch, audio, ...)</td>
+                    <td style="white-space: normal;">Vector-Based Objectives (L1, L2, diffusion, velocity flow, ...)</td>
+                    <td style="white-space: normal;">AIM<sup><a href="#ref-8">8</a></sup>, MAR<sup><a href="#ref-9">9</a></sup></td>
+                </tr>
+                <tr>
+                    <td style="white-space: normal;">Latent AR (Representations)</td>
+                    <td style="white-space: normal;">Learned representations (Embedding)</td>
+                    <td style="white-space: normal;">Any</td>
+                    <td style="white-space: normal;">Any</td>
+                    <td style="white-space: normal;">CPC<sup><a href="#ref-10">10</a></sup>, V-JEPA<sup><a href="#ref-11">11</a></sup>, NEPA</td>
+                </tr>
+                </tbody>
+            </table>
+            </div>
+
+            <p>
+                <strong>Categorical Token AR</strong> 
+                predicts the next element as a <span class="kw">predefined discrete symbol</span> and is typically trained with cross-entropy. 
+                This fits text naturally, and it can be extended to other domains by introducing discretization
+                (pixel tokens, codebooks, learned codecs). 
+                But that extension is itself modality-specific: 
+                you must define or learn a tokenizer/codec for each new signal type, 
+                and the interface becomes tied to those design choices.
+            </p>
+
+            <p>
+                <strong>Continuous-Token AR</strong> 
+                predicts the next element as a <span class="kw">predefined continuous signal</span> and is trained with regression or density-style losses. 
+                This fits raw signals such as pixels, patches, or audio samples.
+                However, it does not provide a natural interface for inherently <span class="kw">symbolic outputs</span> (language, programs, etc) without adding extra machinery.
+            </p>
+
+            <div class="figure" style="max-width: 400px; margin: 1rem auto 0%;">
+            <img src="imgs/gen_pretraining_heads.png" alt="Shared AR backbone with modality-specific heads">
+            <div class="caption">
+                A common compromise: share a <span class="kw">shared autoregressive backbone</span> but attach <span class="kw">modality-specific heads</span> and losses.
+            </div>
+            </div>
+
+            <p>
+                This is why <span class="kw">omnimodality</span> is hard to achieve by mixing these two families directly. 
+                Real systems must handle both discrete and continuous input modalities, and sometimes produce both kinds of outputs. 
+                The usual workaround is a <span class="kw">multi-head design</span> with separate output spaces and objectives, 
+                which then requires careful loss balancing and keeps “what the model predicts” <span class="kw">modality-dependent</span>.<sup><a href="#ref-12">12</a>,<a href="#ref-13">13</a></sup>
+            </p>
+
+            <p>
+                <strong>Latent AR</strong>, as we argued earlier, is the <span class="kw">clean unifier</span>: 
+                instead of predicting raw symbols or raw signals, we predict <span class="kw">latents / embeddings</span>. 
+                Embeddings are not a fixed, natural target space; they are learned. 
+                But that is precisely what makes them useful as an interface: 
+                different modalities enter and exit, while the core autoregressive objective stays the same. 
+                In other words, embeddings let us make autoregression itself modality-agnostic, and push modality-specific details to the boundary.
+            </p>
+
+            <p>
+                CPC and V-JEPA were <span class="kw">early pioneers</span> here. 
+                CPC uses a multi-component contrastive matching pipeline (encoder, context model, scoring head, and large negative pools), which adds substantial system complexity and makes scaling less straightforward than modern single-objective training recipes; 
+                <span class="kw">JEPA-style models</span> predict target representations, but typically introduce a second (target) encoder and predictor machinery to prevent collapse.
+                These designs work, but they are not <span class="kw">minimal interfaces</span> where future work can build on.
+            </p>
+
+        </section>
+
+        <section id="nepa" class="section">
+            <h2>Next-Embedding Prediction</h2>
+
+            <p>
+                As a concrete first step toward <span class="kw">unified and minimal latent autoregression</span>, 
+                we propose to train a model to generatively and autoregressively predict a <span class="kw">shared latent representation</span>,
+                rather than directly generating each modality in its raw space. 
+                In practice, this means treating the internal <span class="kw">embeddings</span> produced by the
+                model as the sequence to be modeled, and using a single conditional predictor
+                to forecast the next embedding from the past ones.
+            </p>
+
+            <div class="double-column" style="--left-width: 0.5; margin: 1rem auto 0; gap: 1rem;">
+                <div class="left-column" style="display: flex; align-items: center;">
+                    <div class="figure" style="max-width: 70%; margin: 0 auto;">
+                        <img src="imgs/nepa-p.png" alt="Overview of NEPA: next-embedding predictive autoregression">
+                        <div class="caption">
+                            Overview of next-embedding predictive autoregression in vision.
+                            An image is mapped to a sequence of patch embeddings, and a single
+                            autoregressive transformer is trained to predict the next embedding
+                            from the previous ones.
+                        </div>
+                    </div>
+                </div>
+                <div class="right-column" style="display: flex; align-items: center;">
+                    <div class="algorithm">
+                        <div class="caption">
+                            Next-embedding prediction.
+                        </div>
+<pre style="font-size: 0.6rem;"><code><span class="alg-comment"># f: embedding layer</span>
+<span class="alg-comment"># h: autoregressive model</span>
+
+<span class="alg-keyword">for</span> pixel_values <span class="alg-keyword">in</span> loader:   <span class="alg-comment"># x, [B, H, W, C]</span>
+    input_embed = <span class="alg-func">f</span>(pixel_values)   <span class="alg-comment"># z, [B, T, D]</span>
+    pred_embed  = <span class="alg-func">h</span>(input_embed)    <span class="alg-comment"># z_hat, [B, T, D]</span>
+
+    loss = <span class="alg-func">Dist</span>(input_embed, pred_embed)
+
+    loss.backward()                 <span class="alg-comment"># back-propagate</span>
+    update(f.param, h.param)        <span class="alg-comment"># update parameters</span>
+
+<span class="alg-keyword">def</span> <span class="alg-func">Dist</span>(z, z_hat):
+    target = z.detach()             <span class="alg-comment"># stop gradient</span>
+
+    pred   = z_hat[:, 0:T-1, :]     <span class="alg-comment"># shift, [B, T-1, D]</span>
+    target = target[:, 1:T,   :]    <span class="alg-comment"># shift, [B, T-1, D]</span>
+
+    <span class="alg-comment"># Use any suitable distance metric.</span>
+    pred   = normalize(pred,   axis=-1)  <span class="alg-comment"># l2-norm</span>
+    target = normalize(target, axis=-1)  <span class="alg-comment"># l2-norm</span>
+    <span class="alg-keyword">return</span> -(pred * target).sum(dim=-1).mean()</code></pre>
+                    </div>
+                </div>
+            </div>
+
+            <p>
+                <span class="kw">NEPA</span> is deliberately minimalistic: we use a single vision backbone,
+                view its patch embeddings as the latent sequence, and train it with one next-embedding objective. 
+                See Figure 4 and Algorithm 1 for details of NEPA; full quantitative results
+                and ablations are reported on the <a href="index">[NEPA homepage]</a>.
+            </p>
+
+            <p>
+                This differs from the common <span class="kw">two-stage latent generative pipeline</span>.
+                In the standard story, you first learn a <span class="kw">codec</span> (an encoder/decoder) to define a latent space, then train a separate generative model over those fixed latents and decode only at the end.
+                Sander Dieleman's overview is a crisp reference for why this two-stage design is practical and widely used in modern generation.<sup><a href="#ref-14">14</a></sup>
+                NEPA is closer to a <span class="kw">single-stage alternative</span>: we treat the latent stream as the training interface itself, and learn representations <em>through</em> next-embedding prediction rather than via an explicit reconstruction decoder.
+                In other words, we are not claiming a canonical “true” latent space, only a shared predictive protocol that different modalities can enter and exit.
+            </p>
+
+            <p>
+                We choose to instantiate this idea first in <span class="kw">vision</span>. 
+                Autoregressive models have been extremely successful for text, 
+                but <span class="kw">autoregression over images</span> has mostly focused on pixels or discrete visual tokens, 
+                which leads to heavy decoders and slow sampling. 
+                At the same time, some language models (e.g., GPT-2) tie their input and output embedding matrices, 
+                so next-token prediction can be viewed, up to that embedding layer,
+                as a form of <span class="kw">next-embedding prediction</span>.<sup><a href="#ref-15">15</a></sup>
+                Verifying the same principle directly in the image domain, 
+                at the level of <span class="kw">native patch embeddings</span>, is therefore a natural starting point.
+            </p>
+
+        </section>
+
+        <!-- Conclusion -->
+        <section id="conclusion" class="section">
+
+            <h2>Final Remarks</h2>
+
+            <p>
+                We rethink <span class="kw">omnimodal modeling</span> from first principles and arrived at a minimal proposal: 
+                use a single autoregressive model to perform <span class="kw">next-embedding prediction</span> in a <span class="kw">shared latent space</span>,
+                instead of defining separate generative losses for every modality.
+            </p>
+
+            <p>
+                We show in vision by treating <span class="kw">native patch embeddings</span> as the sequence to be modeled,
+                and train a <span class="kw">causal transformer</span> to predict the next embedding from its context. 
+                Despite its simplicity, this recipe already yields competitive representations on standard benchmarks, 
+                suggesting that expressive representations may come from learning to predict in <span class="kw">embedding space</span> rather than from complex reconstruction pipelines.
+                The broader question is now how far this next-embedding view can be pushed across different embedding interfaces, orders, multi-modalities, and larger scales.
+                These questions are certainly not answered here yet, but we hope this perspective will help motivate future work.
+            </p>
+
+        </section>
+
+        </div>
+
+    </section>
+    <!-- Footer Section -->
+    <footer class="footer">
+        <div class="container">
+        <section id="references" class="section">
+
+        <h2>References</h2>
+
+        <ol class="ref-list">
+
+            <li id="ref-1">
+            <a href="https://arxiv.org/abs/2405.07987" target="_blank" rel="noopener noreferrer">
+                M. Huh, B. Cheung, T. Wang, P. Isola,
+                “Position: The Platonic Representation Hypothesis,”
+                ICML, 2024.
+            </a>
+            </li>
+
+            <li id="ref-2">
+            <a href="https://www.jmlr.org/papers/volume3/bengio03a/bengio03a.pdf" target="_blank" rel="noopener noreferrer">
+                Y. Bengio, R. Ducharme, P. Vincent, and C. Jauvin,
+                “A Neural Probabilistic Language Model,”
+                Journal of Machine Learning Research, 3:1137–1155, 2003.
+            </a>
+            </li>
+
+            <li id="ref-3">
+            <a href="https://link.springer.com/book/9780387310732" target="_blank" rel="noopener noreferrer">
+                C. M. Bishop,
+                Pattern Recognition and Machine Learning.
+                Springer, 2006.
+            </a>
+            </li>
+
+            <li id="ref-4">
+            <a href="https://cdn.openai.com/research-covers/language-unsupervised/language_understanding_paper.pdf" target="_blank" rel="noopener noreferrer">
+                A. Radford, K. Narasimhan, T. Salimans, and I. Sutskever,
+                “Improving Language Understanding by Generative Pre-Training,”
+                OpenAI technical report, 2018.
+            </a>
+            </li>
+
+            <li id="ref-5">
+            <a href="https://cdn.openai.com/papers/Generative_Pretraining_from_Pixels_V2.pdf" target="_blank" rel="noopener noreferrer">
+                M. Chen, A. Radford, R. Child et al.,
+                “Generative Pretraining from Pixels,”
+                OpenAI technical report, 2018.
+            </a>
+            </li>
+
+            <li id="ref-6">
+            <a href="https://arxiv.org/abs/2404.02905" target="_blank" rel="noopener noreferrer">
+                K. Tian, Y. Jiang, Z. Yuan et al.,
+                “Visual Autoregressive Modeling: Scalable Image Generation via Next-Scale Prediction,”
+                NeurIPS, 2024.
+            </a>
+            </li>
+
+            <li id="ref-7">
+            <a href="https://arxiv.org/abs/2406.06525" target="_blank" rel="noopener noreferrer">
+                P. Sun, Y. Jiang, S. Chen et al.,
+                “Autoregressive Model Beats Diffusion: Llama for Scalable Image Generation,”
+                arXiv, 2024.
+            </a>
+            </li>
+
+            <li id="ref-8">
+            <a href="https://arxiv.org/abs/2401.08541" target="_blank" rel="noopener noreferrer">
+                A. El-Nouby, M. Klein, S. Zhai et al.,
+                “Scalable Pre-training of Large Autoregressive Image Models,”
+                ICML, 2024.
+            </a>
+            </li>
+
+            <li id="ref-9">
+            <a href="https://arxiv.org/abs/2404.02905" target="_blank" rel="noopener noreferrer">
+                T. Li, Y. Tian, H. Li et al.,
+                “Autoregressive Image Generation without Vector Quantization,”
+                NeurIPS, 2024.
+            </a>
+            </li>
+
+            <li id="ref-10">
+            <a href="https://arxiv.org/abs/1807.03748" target="_blank" rel="noopener noreferrer">
+                A. Oord, Y. Li, O. Vinyals.
+                “Representation Learning with Contrastive Predictive Coding,”
+                arXiv, 2024.
+            </a>
+            </li>
+
+            <li id="ref-11">
+            <a href="https://arxiv.org/abs/2404.08471" target="_blank" rel="noopener noreferrer">
+                A. Bardes, Q. Garrido, J. Ponce et al.,
+                “Revisiting Feature Prediction for Learning Visual Representations from Video,”
+                TMLR, 2024.
+            </a>
+            </li>
+
+            <li id="ref-12">
+            <a href="https://arxiv.org/abs/2408.12528" target="_blank" rel="noopener noreferrer">
+                J. Xie, W. Mao, Z. Bai et al.,
+                “Show-o: One Single Transformer to Unify Multimodal Understanding and Generation,”
+                ICLR, 2025.
+            </a>
+            </li>
+
+            <li id="ref-13">
+            <a href="https://arxiv.org/abs/2503.13436" target="_blank" rel="noopener noreferrer">
+                L. Fan, L. Tang, S. Qin et al.,
+                “Unified Autoregressive Visual Generation and Understanding with Continuous Tokens,”
+                arXiv, 2025.
+            </a>
+            </li>
+
+            <li id="ref-14">
+            <a href="https://sander.ai/2025/04/15/latents.html" target="_blank" rel="noopener noreferrer">
+                S. Dieleman,
+                “Generative Modeling in Latent Space,”
+                Blog post, 2025.
+            </a>
+            </li>
+
+            <li id="ref-15">
+            <a href="https://www.spaces.ac.cn/archives/9698" target="_blank" rel="noopener noreferrer">
+                J. Su,
+                “语言模型输出端共享Embedding的重新探索,”
+                Blog post, 2023.
+            </a>
+            </li>
+
+        </ol>
+
+        </section>
+
+            <h2>BibTeX</h2>
+            <p>If you find this work useful, please cite:</p>
+            <pre class="bibtex">
+@article{six2025nepa,
+  title={Next-Embedding Prediction Makes Strong Vision Learners},
+  author={Sihan Xu and Ziqiao Ma and Wenhao Chai and Xuweiyi Chen and Weiyang Jin and Joyce Chai and Saining Xie and Stella X. Yu},
+  journal={arXiv preprint arXiv: 2512.16922},
+  year={2025}
+}</pre>
+            <p>
+                This website is licensed under a
+                <a rel="license" href="http://creativecommons.org/licenses/by-sa/4.0/">
+                    Creative Commons Attribution-ShareAlike 4.0 International License
+                </a>.
+            </p>
+            <p>Design by <a href="https://sihanxu.me/" target="_blank">Si.X</a></p>
+        </div>
+    </footer>
+
+</body>
+</html>

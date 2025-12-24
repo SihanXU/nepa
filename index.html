@@ -52,7 +52,7 @@
                                   <a href="https://web.eecs.umich.edu/~stellayu/" target="_blank" rel="noopener noreferrer">Stella X. Yu</a>
                                 </p>
                                 <div>
-                                    <!-- <a href="blog" style="text-decoration: none; color: #2563eb; margin-right: 1rem;">[Blog]</a> -->
+                                    <a href="blog" style="text-decoration: none; color: #2563eb; margin-right: 1rem;">[Blog]</a>
                                     <a href="https://arxiv.org/pdf/2512.16922" style="text-decoration: none; color: #2563eb; margin-right: 1rem;">[Paper]</a>
                                     <a href="https://arxiv.org/abs/2512.16922" style="text-decoration: none; color: #2563eb; margin-right: 1rem;">[arXiv]</a>
                                     <a href="https://github.com/SihanXU/nepa" style="text-decoration: none; color: #2563eb; margin-right: 1rem;">[Code]</a>
@@ -90,10 +90,9 @@
                                 <ul>
                                     <br>
                                     <li><strong>Minimal algorithmic design.</strong> <span class="kw">NEPA</span> relies solely on a <span class="kw">next-embedding prediction</span> loss to learn broad, generalizable models for diverse downstream vision problems—no decoders, no masking schedules, and no extra tricks.</li>
-                                    <br>
-                                    <li><strong>Native embeddings.</strong> No <span class="kw">offline encoders</span>. Autoregression operates on the embeddings from the encoder directly.</li>
-                                    <br>
+                                    <li><strong>Native embeddings.</strong> No <span class="kw">offline encoders</span>. Autoregression operates on the embeddings from the encoder directly, where the encoder is any learnable function that maps data to vectors.</li>
                                     <li><strong>Strong performance as ViT backbones.</strong> We train modern <span class="kw">Vision Transformers</span> with <span class="kw">NEPA</span> and achieve competitive performance after supervised fine-tuning.</li>
+                                    <br>
                                 </ul>
                             </div>
                         </div>
@@ -192,7 +191,7 @@
                     </div>
 
                     <p>
-                        <strong>What to predict? From copying the current to <span class="kw">predicting the next</span>.</strong>
+                        <strong>What to predict? From reconstructing the current to <span class="kw">predicting the next</span>.</strong>
                         We frame pretraining as predicting the <span class="kw">embedding of the next patch</span> in the sequence, rather than reconstructing the current input.
                         Introducing an <span class="kw">autoregressive shift</span> prevents the model from "cheating" by copying its inputs, i.e., using patch <em>t</em> as input and patch <em>t+1</em> as the target.
                         Ablation studies show that without this shift, training quickly stalls and validation accuracy barely rises, whereas the shifted variant steadily climbs to a strong model.
