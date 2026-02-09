@@ -269,7 +269,7 @@
                     <td style="white-space: normal;">Learned representations (Embedding)</td>
                     <td style="white-space: normal;">Any</td>
                     <td style="white-space: normal;">Any</td>
-                    <td style="white-space: normal;">CPC<sup><a href="#ref-10">10</a></sup>, V-JEPA<sup><a href="#ref-11">11</a></sup>, NEPA</td>
+                    <td style="white-space: normal;">CPC<sup><a href="#ref-10">10</a></sup>, V-JEPA2<sup><a href="#ref-11">11</a></sup>, NEPA</td>
                 </tr>
                 </tbody>
             </table>
@@ -316,9 +316,9 @@
             </p>
 
             <p>
-                CPC and V-JEPA were <span class="kw">early pioneers</span> here. 
+                CPC and V-JEPA2 were <span class="kw">early pioneers</span> here. 
                 CPC uses a multi-component contrastive matching pipeline (encoder, context model, scoring head, and large negative pools), which adds substantial system complexity and makes scaling less straightforward than modern single-objective training recipes; 
-                <span class="kw">JEPA-style models</span> predict target representations, but typically introduce a second (target) encoder and predictor machinery to prevent collapse.
+                <span class="kw">JEPA-style models</span> predict target representations, but typically introduce a frozen (target) encoder and predictor machinery to prevent collapse.
                 These designs work, but they are not <span class="kw">minimal interfaces</span> where future work can build on.
             </p>
 
@@ -523,10 +523,10 @@
             </li>
 
             <li id="ref-11">
-            <a href="https://arxiv.org/abs/2404.08471" target="_blank" rel="noopener noreferrer">
-                A. Bardes, Q. Garrido, J. Ponce et al.,
-                “Revisiting Feature Prediction for Learning Visual Representations from Video,”
-                TMLR, 2024.
+            <a href="https://arxiv.org/abs/2506.09985" target="_blank" rel="noopener noreferrer">
+                M. Assran, A. Bardes, D. Fan et al.,
+                “V-JEPA 2: Self-Supervised Video Models Enable Understanding, Prediction and Planning,”
+                arXiv, 2025.
             </a>
             </li>
 
